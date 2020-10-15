@@ -172,14 +172,6 @@ export const reqManageCount=()=>{
     })
 }
 
-// 管理员登录
-export const reqManageLogin=(params)=>{
-    return axios({
-        url:baseUrl+"/api/userlogin",
-        method:"post",
-        data:qs.stringify(params)
-    })
-}
 
 
 // 商品分类
@@ -352,5 +344,16 @@ export const reqGoodsDel=(id)=>{
         url:baseUrl+"/api/goodsdelete",
         method:"post",
         data:qs.stringify({id})
+    })
+}
+
+
+
+// 登录
+export const reqManageLogin=(params)=>{
+    return axios({
+        url:baseUrl+"/api/userlogin",
+        method:"post",
+        data:qs.stringify(params)
     })
 }

@@ -1,1 +1,5 @@
-export const actions={}
+export const actions={
+    changeUserInfoAction(context,info){
+        context.commit("changeUserInfo",info)
+    }
+}

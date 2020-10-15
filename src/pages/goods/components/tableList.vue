@@ -10,17 +10,23 @@
     >
       <el-table-column prop="id" label="商品编号" sortable width="180"></el-table-column>
 
-      <el-table-column prop="specsname" label="商品名称" sortable width="180"></el-table-column>
+      <el-table-column prop="goodsname" label="商品名称" sortable width="180"></el-table-column>
 
       <el-table-column label="商品价格">
         <template slot-scope="scope">
-          {{scope}}
+          {{scope.row.price|filterPrice}}
+        </template>
+      </el-table-column>
+
+            <el-table-column label="市场价格">
+        <template slot-scope="scope">
+          {{scope.row.market_price|filterPrice}}
         </template>
       </el-table-column>
 
       <el-table-column label="图片">
         <template slot-scope="scope">
-          <img :src="scope" alt="">
+          <img :src="$imgHttp+scope.row.img" alt="">
         </template>
       </el-table-column>
 
@@ -45,7 +51,7 @@
         </template>
       </el-table-column>
 
-      <el-table-column prop="status" label="操作">
+      <el-table-column label="操作">
         <template slot-scope="scope">
           <el-button type="primary" @click="edit(scope.row.id)">编辑</el-button>
           <del-btn @del="del(scope.row.id)"></del-btn> 
@@ -66,7 +72,7 @@
 
 <script>
 import { mapGetters, mapActions } from "vuex";
-import { reqSpecsDel } from "../../../utils/request";
+import { reqGoodsDel } from "../../../utils/request";
 import { successAlert, warningAlert } from "../../../utils/alert";
 export default {
   data() {
@@ -74,22 +80,22 @@ export default {
   },
   computed: {
     ...mapGetters({
-      list:"specs/list",
-      total:"specs/total",
-      size:"specs/size",
+      list:"goods/list",
+      total:"goods/total",
+      size:"goods/size",
     })
   },
   methods: {
     ...mapActions({
-      reqListAction: "specs/reqListAction",
-      changePageAction:"specs/changePageAction",
-      reqTotalAction:"specs/reqTotalAction"
+      reqListAction: "goods/reqListAction",
+      changePageAction:"goods/changePageAction",
+      reqTotalAction:"goods/reqTotalAction"
     }),
     edit(id) {
       this.$emit('edit',id);
     },
     del(id) {
-          reqSpecsDel(id).then(res=>{
+          reqGoodsDel(id).then(res=>{
             if(res.data.code==200){
               successAlert(res.data.msg)
               this.reqListAction();

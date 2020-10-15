@@ -27,11 +27,6 @@ const actions = {
                 context.dispatch("reqListAction");
                 return;
             }
-            // 后台数据中的attrs规格属性是以"[]"这样的形式存储和返回的，所以在获取到后台返回的list之后，就要将其里面的attrs属性值转换一下，不然在页面中使用到list时会不对劲
-            list.forEach(item => {
-                item.attrs = JSON.parse(item.attrs);
-            });
-
             context.commit('changeList', list);
         });
     },

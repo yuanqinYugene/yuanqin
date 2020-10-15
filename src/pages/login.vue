@@ -3,10 +3,10 @@
     <div class="box">
       <h3>登录</h3>
       <div>
-        <el-input placeholder="请输入账号"></el-input>
+        <el-input placeholder="请输入账号" v-model="user.username"></el-input>
       </div>
       <div>
-        <el-input placeholder="请输入密码"></el-input>
+        <el-input placeholder="请输入密码" v-model="user.password"></el-input>
       </div>
       <div>
         <el-button type="primary" @click="login">登录</el-button>
@@ -16,10 +16,38 @@
 </template>
 
 <script>
+import { reqManageLogin } from "../utils/request";
+import { successAlert, warningAlert } from "../utils/alert";
+import { mapGetters, mapActions } from "vuex";
 export default {
+  data() {
+    return {
+      user: {
+        username: "",
+        password: ""
+      }
+    };
+  },
+  computed: {
+    ...mapGetters({})
+  },
   methods: {
+    ...mapActions({
+      changeUserInfoAction: "changeUserInfoAction"
+    }),
     login() {
-      this.$router.push("/");
+      reqManageLogin(this.user).then(res => {
+        if (res.data.code == 200) {
+          successAlert(res.data.msg);
+          console.log(res.data.list);
+          
+          // 将用户信息存在根状态层中
+          this.changeUserInfoAction(res.data.list);
+          this.$router.push("/");
+        }else{
+          warningAlert(res.data.msg);
+        }
+      });
     }
   }
 };

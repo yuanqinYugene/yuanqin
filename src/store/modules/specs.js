@@ -17,8 +17,9 @@ const mutations = {
     }
 }
 const actions = {
-    reqListAction(context) {
-        let params = { size: context.state.size, page: context.state.page };
+    reqListAction(context,bool) {
+        // 如果获取列表没有传参数（page size）,那么会取到所有的规格
+        let params = bool?{}:{ size: context.state.size, page: context.state.page };
         reqSpecsList(params).then(res => {
             let list = res.data.list ? res.data.list : [];
             if (context.state.page > 1 && list.length == 0) {

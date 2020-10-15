@@ -17,6 +17,7 @@
             <i class="el-icon-menu"></i>
             <span slot="title">首页</span>
           </el-menu-item>
+
           <!-- 一级菜单 -->
           <el-submenu index="2">
             <template slot="title">
@@ -49,7 +50,10 @@
 
       <el-container>
         <!-- header -->
-        <el-header class="header"></el-header>
+        <el-header class="header">
+          <h3>{{userInfo.username}}</h3>
+          <el-button type="danger" @click="logOut">退出登录</el-button>
+        </el-header>
         <el-main>
           <!-- 面包屑效果 -->
           <el-breadcrumb separator-class="el-icon-arrow-right" v-if='$route.name'>
@@ -65,7 +69,23 @@
 </template>
 
 <script>
-export default {};
+import { mapGetters, mapActions } from "vuex";
+export default {
+  computed:{
+    ...mapGetters({
+      userInfo:"userInfo"
+    })
+  },
+  methods:{
+    ...mapActions({
+      changeUserInfoAction:"changeUserInfoAction"
+    }),
+    logOut(){
+      this.changeUserInfoAction({});
+      this.$router.push("/login");
+    }
+  }
+};
 </script>
 
 <style scoped>
@@ -78,5 +98,10 @@ export default {};
 }
 .header {
   background-color: #b3c0d1;
+  text-align: right;
+  line-height: 60px;
+}
+.header h3{
+  float: right;
 }
 </style>

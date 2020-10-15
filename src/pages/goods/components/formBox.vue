@@ -8,18 +8,26 @@
     >
       <el-form ref="form" :model="form" label-width="80px">
         <el-form-item label="一级分类">
-          <el-select v-model="form.first_cateid">
-            <el-option label="请选择" :value="0"></el-option>
-            <!-- 此处是循环 -->
-            <el-option label="家电" value></el-option>
+          <el-select v-model="form.first_cateid" @change="changeFirstCateList">
+            <el-option label="请选择" value disabled></el-option>
+            <el-option
+              v-for="item in cateList"
+              :key="item.id"
+              :value="item.id"
+              :label="item.catename"
+            ></el-option>
           </el-select>
         </el-form-item>
 
         <el-form-item label="二级分类">
           <el-select v-model="form.second_cateid">
-            <el-option label="请选择" :value="0"></el-option>
-            <!-- 此处是循环 -->
-            <el-option label="冰箱" value></el-option>
+            <el-option label="请选择" value disabled></el-option>
+            <el-option
+              v-for="item in secondCateList"
+              :key="item.id"
+              :value="item.id"
+              :label="item.catename"
+            ></el-option>
           </el-select>
         </el-form-item>
 
@@ -31,14 +39,14 @@
           <el-input v-model="form.price"></el-input>
         </el-form-item>
 
-        <el-form-item label="市场a价格">
+        <el-form-item label="市场价格">
           <el-input v-model="form.market_price"></el-input>
         </el-form-item>
 
         <el-form-item label="图片">
           <!-- 1、原生写文件上传 -->
           <div class="up_img">
-            <img :src="$imgHttp+imgUrl">
+            <img :src="imgUrl" v-if="imgUrl" />
             <h3>+</h3>
             <input type="file" @change="getFile" v-if="info.isshow" />
           </div>
@@ -46,18 +54,21 @@
         </el-form-item>
 
         <el-form-item label="商品规格">
-          <el-select v-model="form.specsid">
-            <el-option label="请选择" :value="0"></el-option>
-            <!-- 此处是循环 -->
-            <el-option label="家电" value></el-option>
+          <el-select v-model="form.specsid" @change="changeSpecs">
+            <el-option label="请选择" value disabled></el-option>
+            <el-option
+              v-for="item in specsList"
+              :value="item.id"
+              :key="item.id"
+              :label="item.specsname"
+            ></el-option>
           </el-select>
         </el-form-item>
 
         <el-form-item label="商品属性">
-          <el-select v-model="form.specsattr">
-            <el-option label="请选择" :value="0"></el-option>
-            <!-- 此处是循环 -->
-            <el-option label="家电" value></el-option>
+          <el-select v-model="form.specsattr" multiple>
+            <el-option label="请选择" value disabled></el-option>
+            <el-option v-for="item in specsAttr" :value="item" :key="item" :label="item"></el-option>
           </el-select>
         </el-form-item>
 
@@ -93,66 +104,92 @@
 import E from "wangeditor";
 import { mapGetters, mapActions } from "vuex";
 import {
-  reqSpecsAdd,
-  reqSpecsDetail,
-  reqSpecsUpdate
+  reqGoodsAdd,
+  reqGoodsDetail,
+  reqGoodsUpdate,
+  reqCateList,
+  // reqSpecsList 无须引入此接口发起请求，因为在specsList中自带下一级目录
 } from "../../../utils/request";
 import { successAlert, warningAlert } from "../../../utils/alert";
 export default {
   props: ["info"],
   data() {
     return {
-      imgUrl:"",
+      imgUrl: "",
+      secondCateList: [],
+      specsAttr:[],
       form: {
-        first_cateid:"",
-        second_cateid:"",
-        goodsname:"",
-        price:"",
-        market_price:"",
-        img:null,
-        description:"",
-        specsid:"",
-        specsattr:[],//后端需要的是"[]"
-        isnew:1,
-        ishot:1,
-        status:1
+        first_cateid: "",
+        second_cateid: "",
+        goodsname: "",
+        price: "",
+        market_price: "",
+        img: null,
+        description: "",
+        specsid: "",
+        specsattr: [], //后端需要的是"[]"
+        isnew: 1,
+        ishot: 1,
+        status: 1
       }
     };
   },
-  mounted() {},
+  mounted() {
+    // 如果商品分类list没有请求过就请求一次，这里需要获取cate的list,所以必须通过actions里的函数来发请求并做then处理
+    if (this.cateList.length == 0) {
+      this.reqCateListAction();
+    }
+    // 请求商品规格数据，由于商品规格的请求是分页的，这里不需要分页需要全部数据，所以传值true告诉specs的请求list函数需要请求全部数据
+    this.reqSpecsListAction(true);
+  },
   computed: {
-    ...mapGetters({})
+    ...mapGetters({
+      cateList: "cate/list",
+      specsList: "specs/list"
+    })
   },
   methods: {
     ...mapActions({
-      reqListAction: "specs/reqListAction",
-      reqTotalAction: "specs/reqTotalAction"
+      reqListAction: "goods/reqListAction",
+      reqTotalAction: "goods/reqTotalAction",
+      reqCateListAction: "cate/reqListAction",
+      reqSpecsListAction: "specs/reqListAction"
     }),
+    changeFirstCateList() {
+      //一级分类变了，二级分类的值应该置空,让客户重新选择二级分类
+      this.form.second_cateid = "";
+      // 获取对应的二级分类
+      this.getSecondCateList();
+    },
+    getSecondCateList() {
+      // 这里无须用cate.js里的actions里的函数来发请求，这里只需要请求拿到数据然后自己做then处理，所以用的是cate的请求函数就可
+      reqCateList({ pid: this.form.first_cateid }).then(res => {
+        this.secondCateList = res.data.list;
+      });
+    },
+    changeSpecs(){
+      this.form.specsattr=[];
+      this.getSpecsAttr();
+    },
+    getSpecsAttr(){
+      let obj=this.specsList.find(item=>item.id==this.form.specsid);
+      this.specsAttr=obj.attrs;
+    },
     cancel() {
       this.info.isshow = false;
     },
-    //验证数据是否合格
-    checkedData() {
-      //验证规格名称
-      if (this.form.specsname == "") {
-        warningAlert("规格名称不能为空");
-        return false;
-      }
 
-      //验证每一个属性值都不能为空
-      if (this.attrArr.some(item => item.value == "")) {
-        warningAlert("所有的属性值都必填");
-        return false;
-      }
-      return true;
-    },
     add() {
-      if (!this.checkedData()) {
-        return;
+       /*
+     let data=this.form;
+     data.specsattr=JSON.stringify(this.form.specsattr)
+     */
+      this.form.description=this.editor.txt.html();
+      let data={
+        ...this.form,
+        specsattr:JSON.stringify(this.form.specsattr)
       }
-
-      this.form.attrs = JSON.stringify(this.attrArr.map(item => item.value));
-      reqSpecsAdd(this.form).then(res => {
+      reqGoodsAdd(data).then(res => {
         if (res.data.code == 200) {
           successAlert(res.data.msg);
           this.empty();
@@ -172,33 +209,46 @@ export default {
     opened() {
       this.editor = new E("#editor");
       this.editor.create();
+      this.editor.txt.html(this.form.description);
     },
     empty() {
-      this.attrArr = [{ value: "" }, { value: "" }];
+      this.imgUrl = "";
       this.form = {
-        specsname: "",
-        attrs: "[]",
+        first_cateid: "",
+        second_cateid: "",
+        goodsname: "",
+        price: "",
+        market_price: "",
+        img: null,
+        description: "",
+        specsid: "",
+        specsattr: [], //后端需要的是"[]"
+        isnew: 1,
+        ishot: 1,
         status: 1
       };
     },
     look(id) {
-      reqSpecsDetail(id).then(res => {
+      reqGoodsDetail(id).then(res => {
         if (res.data.code == 200) {
-          this.form = res.data.list[0];
-          this.attrArr = JSON.parse(this.form.attrs).map(item => ({
-            value: item
-          }));
+          this.form = res.data.list;
+          this.form.id=id;
+          this.getSecondCateList();
+          this.imgUrl=this.$imgHttp+this.form.img;
+          this.form.specsattr=JSON.stringify(this.form.specsattr);
+          this.getSpecsAttr();
         } else {
           warningAlert(res.data.msg);
         }
       });
     },
     update() {
-      if (!this.checkedData()) {
-        return;
+      this.form.description=this.editor.txt.html();
+      let data={
+        ...this.form,
+        specsattr:JSON.stringify(this.form.specsattr)
       }
-      this.form.attrs = JSON.stringify(this.attrArr.map(item => item.value));
-      reqSpecsUpdate(this.form).then(res => {
+      reqGoodsUpdate(data).then(res => {
         if (res.data.code == 200) {
           successAlert(res.data.msg);
           this.info.isshow = false;
@@ -209,7 +259,23 @@ export default {
         }
       });
     },
-    getFile() {}
+    getFile(e) {
+      let file = e.target.files[0];
+      if (file.size > 2 * 1024 * 1024) {
+        warningAlert("图片不能大于2M");
+        return;
+      }
+      let imgArr = [".jpg", ".jpeg", ".png", ".gif"];
+      let imgType = file.name.slice(file.name.lastIndexOf("."));
+      if (!imgArr.some(item => imgType == item)) {
+        warningAlert("文件格式不正确");
+        return;
+      }
+      this.imgUrl = URL.createObjectURL(file);
+      // console.log(this.imgUrl);//完成的包括域名的url
+
+      this.form.img = file;
+    }
   }
 };
 </script>
