@@ -1,21 +1,20 @@
-# systems
+##### 已完成模块：
 
-> A Vue.js project
+菜单管理
 
-## Build Setup
+角色管理
 
-``` bash
-# install dependencies
-npm install
+管理员管理
 
-# serve with hot reload at localhost:8080
-npm run dev
+##### 有bug待解决的：
 
-# build for production with minification
-npm run build
+首页折线图
 
-# build for production and view the bundle analyzer report
-npm run build --report
-```
+##### 目前还未进行的模块：
 
-For a detailed explanation on how things work, check out the [guide](http://vuejs-templates.github.io/webpack/) and [docs for vue-loader](http://vuejs.github.io/vue-loader).
+会员管理
+
+轮播图管理
+
+秒杀活动
+
