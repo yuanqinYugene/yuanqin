@@ -93,6 +93,7 @@ export default {
     }),
     edit(id) {
       this.$emit('edit',id);
+      console.log(1,this.list);
     },
     del(id) {
           reqGoodsDel(id).then(res=>{

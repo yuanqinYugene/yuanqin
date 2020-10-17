@@ -8,13 +8,13 @@
       row-key="id"
       :tree-props="{children:'children'}"
     >
-      <el-table-column prop="id" label="分类编号" sortable width="180"></el-table-column>
+      <el-table-column prop="id" label="编号" sortable width="180"></el-table-column>
 
-      <el-table-column prop="catename" label="分类名称" sortable width="180"></el-table-column>
+      <el-table-column prop="title" label="轮播图标题" sortable width="180"></el-table-column>
 
-      <el-table-column label="图片">
+      <el-table-column label="图片" sortable width="180">
         <template slot-scope="scope">
-          <img :src="$imgHttp+scope.row.img" v-if="scope.row.img!==''">
+          <img :src="$imgHttp+scope.row.img" alt="">
         </template>
       </el-table-column>
 
@@ -32,13 +32,12 @@
         </template>
       </el-table-column>
     </el-table>
-
   </div>
 </template>
 
 <script>
 import { mapGetters, mapActions } from "vuex";
-import { reqCateDel } from "../../../utils/request";
+import { reqBannerDel } from "../../../utils/request";
 import { successAlert, warningAlert } from "../../../utils/alert";
 export default {
   data() {
@@ -46,20 +45,18 @@ export default {
   },
   computed: {
     ...mapGetters({
-      list:"cate/list"
+      list:"banner/list"
     })
   },
   methods: {
     ...mapActions({
-      reqListAction: "cate/reqListAction"
+      reqListAction: "banner/reqListAction",
     }),
     edit(id) {
       this.$emit('edit',id);
-      console.log(1,this.list);
-      
     },
     del(id) {
-          reqCateDel(id).then(res=>{
+          reqBannerDel(id).then(res=>{
             if(res.data.code==200){
               successAlert(res.data.msg)
               this.reqListAction();
@@ -71,8 +68,6 @@ export default {
   },
   mounted() {
     this.reqListAction();
-    console.log(this.list);//空的，还没请求
-    
   }
 }
 </script>

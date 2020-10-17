@@ -333,7 +333,7 @@ export const reqGoodsUpdate=(params)=>{
     }
     return axios({
         url:baseUrl+"/api/goodsedit",
-        methos:"post",
+        method:"post",
         data
     })
 }
@@ -355,5 +355,131 @@ export const reqManageLogin=(params)=>{
         url:baseUrl+"/api/userlogin",
         method:"post",
         data:qs.stringify(params)
+    })
+}
+
+
+// 会员管理
+// 列表
+export const reqMemberList=()=>{
+    return axios({
+        url:baseUrl+"/api/memberlist",
+        method:"get"
+    })
+}
+// 一条
+export const reqMemberDetail=(uid)=>{
+    return axios({
+        url:baseUrl+"/api/memberinfo",
+        method:"get",
+        params:{
+            uid:uid
+        }
+    })
+}
+// 修改
+export const reqMemberUpdate=(params)=>{
+    return axios({
+        url:baseUrl+"/api/memberedit",
+        method:"post",
+        data:qs.stringify(params)
+    })
+}
+
+// 轮播图
+// 添加
+export const reqBannerAdd=(params)=>{
+    let data =new FormData();
+    for(let k in params){
+        data.append(k,params[k]);
+    }
+    return axios({
+        url:baseUrl+"/api/banneradd",
+        method:"post",
+        data
+    })
+}
+
+// 商品列表
+export const reqBannerList=()=>{
+    return axios({
+        url:baseUrl+"/api/bannerlist",
+        method:"get"
+    })
+}
+
+// 一条
+export const reqBannerDetail=(id)=>{
+    return axios({
+        url:baseUrl+"/api/bannerinfo",
+        method:"get",
+        params:{id}
+    })
+}
+
+// 修改
+export const reqBannerUpdate=(params)=>{
+    let data =new FormData();
+    for(let k in params){
+        data.append(k,params[k]);
+    }
+    return axios({
+        url:baseUrl+"/api/banneredit",
+        method:"post",
+        data
+    })
+}
+
+// 删除
+export const reqBannerDel=(id)=>{
+    return axios({
+        url:baseUrl+"/api/bannerdelete",
+        method:"post",
+        data:qs.stringify({id})
+    })
+}
+
+// 秒杀
+// 添加
+export const reqSeckillAdd=(params)=>{
+    return axios({
+        url:baseUrl+"/api/seckadd",
+        method:"post",
+        data:qs.stringify(params)
+    })
+}
+
+// 商品列表
+export const reqSeckillList=()=>{
+    return axios({
+        url:baseUrl+"/api/secklist",
+        method:"get"
+    })
+}
+
+// 一条
+export const reqSeckillDetail=(id)=>{
+    return axios({
+        url:baseUrl+"/api/seckinfo",
+        method:"get",
+        params:{id}
+    })
+}
+
+// 修改
+export const reqSeckillUpdate=(params)=>{
+    return axios({
+        url:baseUrl+"/api/seckedit",
+        method:"post",
+        data:qs.stringify(params)
+    })
+}
+
+// 删除
+export const reqSeckillDel=(id)=>{
+    return axios({
+        url:baseUrl+"/api/seckdelete",
+        method:"post",
+        data:qs.stringify({id})
     })
 }

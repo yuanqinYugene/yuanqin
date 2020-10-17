@@ -235,7 +235,7 @@ export default {
           this.form.id=id;
           this.getSecondCateList();
           this.imgUrl=this.$imgHttp+this.form.img;
-          this.form.specsattr=JSON.stringify(this.form.specsattr);
+          this.form.specsattr=JSON.parse(this.form.specsattr);
           this.getSpecsAttr();
         } else {
           warningAlert(res.data.msg);

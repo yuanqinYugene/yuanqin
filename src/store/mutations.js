@@ -1,3 +1,6 @@
+
+// 问：有了sessionStorage为啥还要弄userInfo?
+// 答：用状态层数据取或者改的时候很方便，如果用session每次都要判断是否有这个数据然后再取，比较麻烦。
 export const state={
     userInfo:sessionStorage.getItem("userInfo")?JSON.parse(sessionStorage.getItem("userInfo")):{}
 }

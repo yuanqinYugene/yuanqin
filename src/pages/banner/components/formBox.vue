@@ -1,30 +1,28 @@
 <template>
   <div>
-    <el-dialog
-      :title="info.isAdd ? '添加商品分类' : '编辑商品分类'"
-      :visible.sync="info.isshow"
-      @closed="close"
-    >
+    <el-dialog :title="info.isAdd ? '添加轮播图' : '编辑轮播图'" :visible.sync="info.isshow" @closed="close">
       <el-form ref="form" :model="form" label-width="80px">
-        <el-form-item label="上级分类">
-          <el-select v-model="form.pid">
-            <el-option label="顶级分类" :value="0"></el-option>
-            <el-option v-for="item in list" :key="item.id" :label="item.catename" :value="item.id"></el-option>
-          </el-select>
+        <el-form-item label="标题">
+          <el-input v-model="form.title"></el-input>
         </el-form-item>
 
-        <el-form-item label="分类名称">
-          <el-input v-model="form.catename"></el-input>
-        </el-form-item>
-
-        <el-form-item label="图片" v-if="form.pid!=0">
+        <el-form-item label="图片">
           <!-- 1、原生写文件上传 -->
-          <div class="up_img">
+          <!-- <div class="up_img" v-if="form.pid!=0">
             <img :src="imgUrl" alt v-if="imgUrl" />
             <h3>+</h3>
             <input type="file" @change="getFile" v-if="info.isshow" />
-          </div>
+          </div>-->
           <!-- 2、用ele组件写文件上传的方法详见老师的笔记 -->
+          <el-upload
+            class="avatar-uploader"
+            action="#"
+            :show-file-list="false"
+            :on-change="getFile2"
+          >
+            <img v-if="imgUrl" :src="imgUrl" class="avatar"/>
+            <i v-else class="el-icon-plus avatar-uploader-icon"></i>
+          </el-upload>
         </el-form-item>
 
         <el-form-item label="状态">
@@ -44,9 +42,9 @@
 <script>
 import { mapGetters, mapActions } from "vuex";
 import {
-  reqCateAdd,
-  reqCateDetail,
-  reqCateUpdate
+  reqBannerAdd,
+  reqBannerDetail,
+  reqBannerUpdate
 } from "../../../utils/request";
 import { successAlert, warningAlert } from "../../../utils/alert";
 export default {
@@ -55,28 +53,21 @@ export default {
     return {
       imgUrl: "",
       form: {
-        pid: 0,
-        catename: "",
+        title: "",
         img: null,
         status: 1
       }
     };
   },
-  mounted() {},
-  computed: {
-    ...mapGetters({
-      list: "cate/list"
-    })
-  },
   methods: {
     ...mapActions({
-      reqListAction: "cate/reqListAction"
+      reqListAction: "banner/reqListAction"
     }),
     cancel() {
       this.info.isshow = false;
     },
     add() {
-      reqCateAdd(this.form).then(res => {
+      reqBannerAdd(this.form).then(res => {
         if (res.data.code == 200) {
           successAlert(res.data.msg);
           this.empty();
@@ -95,27 +86,28 @@ export default {
     empty() {
       this.imgUrl = "";
       this.form = {
-        pid: 0,
-        catename: "",
-         img: null,
+        title: "",
+        img: null,
         status: 1
       };
     },
     look(id) {
-      reqCateDetail(id).then(res => {
-        if (res.data.code == 200) {
-          console.log(res);
-          
+      reqBannerDetail(id).then(res => {
+        if (res.data.code == 200) {       
           this.form = res.data.list;
-          this.form.id = id;
-          this.imgUrl=this.$imgHttp+this.form.img;
+          this.form.id=id;
+           this.imgUrl=this.$imgHttp+this.form.img;//此时form里面的img是从后台传来的图片url字符串
+           console.log(this.form.img);// 此时是url
+           
         } else {
           warningAlert(res.data.msg);
         }
       });
     },
     update() {
-      reqCateUpdate(this.form).then(res => {
+      console.log(this.form.img);// 目前还是url
+      
+      reqBannerUpdate(this.form).then(res => { //这里要传的form.img是file类型，所以如果用户没有修改这张图而是直接点了修改，要保证form.img是文件类型就必须要触发getFile2()重新给form.img赋值
         if (res.data.code == 200) {
           successAlert(res.data.msg);
           this.info.isshow = false;
@@ -126,27 +118,23 @@ export default {
         }
       });
     },
-    getFile(e) {
-      // console.log(e);
-      let file = e.target.files[0];
+    getFile2(e) { //这个函数在添加文件和上传时都调用，所以添加一次图片会调用2次
+      let file = e.raw;
       console.log(1,file);
-      
-
-      // 判断图片的大小是否大于2M，size的单位是B
       if (file.size > 2 * 1024 * 1024) {
-        warningAlert("图片不能大于2M");
+        warningAlert("文件不能超过2M");
         return;
       }
-      // 判断是否是图片格式
-      let imgType = file.name.slice(file.name.lastIndexOf("."));
-      let imgArr = [".jpg", ".jpeg", ".png", ".gif"];
-      if (!imgArr.some(item => item == imgType)) {
+      //2.是图片
+      let imgExtArr = [".jpg", ".png", ".jpeg", ".gif"];
+      let extname = file.name.slice(file.name.lastIndexOf(".")); //'.jpg'
+      if (!imgExtArr.some(item => item == extname)) {
         warningAlert("文件格式不正确");
         return;
       }
-
-      // console.log(URL.createObjectURL(file));
+      //URL.createObjectURL() 可以通过文件生成一个地址
       this.imgUrl = URL.createObjectURL(file);
+      //将文件保存在form.img
       this.form.img = file;
     }
   }
@@ -154,32 +142,30 @@ export default {
 </script>
 
 <style scoped>
-.up_img {
-  width: 150px;
-  height: 150px;
-  border: 1px dashed #ccc;
-  position: relative;
-}
-.up_img img {
-  width: 150px;
-  height: 150px;
-  position: absolute;
-  left: 0;
-  top: 0;
-}
-.up_img h3 {
-  font-size: 40px;
-  text-align: center;
-  line-height: 150px;
-  color: #ccc;
-}
-.up_img input {
-  width: 150px;
-  height: 150px;
-  position: absolute;
-  left: 0;
-  top: 0;
-  opacity: 0;
+.avatar-uploader .el-upload {
+  border: 1px dashed #d9d9d9;
+  border-radius: 6px;
   cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+
+.avatar-uploader .el-upload:hover {
+  border-color: #409eff;
+}
+
+.avatar-uploader-icon {
+  font-size: 28px;
+  color: #8c939d;
+  width: 178px;
+  height: 178px;
+  line-height: 178px;
+  text-align: center;
+}
+
+.avatar {
+  width: 178px;
+  height: 178px;
+  display: block;
 }
 </style>

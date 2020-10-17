@@ -59,6 +59,10 @@ export default {
     ...mapActions({
       reqList: "cate/reqListAction",
     }),
+    a(){
+      console.log(this.list);
+      
+    }
   },
   mounted() {
     this.reqList();
