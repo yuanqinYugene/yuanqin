@@ -1,7 +1,6 @@
 import Vue from 'vue'
 import Router from 'vue-router'
-import store from '../store'//引入整个状态层
-import { state } from '../store/mutations';
+import store from '../store/index'//引入整个状态层
 
 Vue.use(Router)
 

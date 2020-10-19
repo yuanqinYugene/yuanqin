@@ -6,8 +6,8 @@
       @closed="close"
       @opened="opened"
     >
-      <el-form ref="form" :model="form" label-width="80px">
-        <el-form-item label="一级分类">
+      <el-form :rules="rules" ref="form" :model="form" label-width="80px">
+        <el-form-item label="一级分类" prop="first_cateid">
           <el-select v-model="form.first_cateid" @change="changeFirstCateList">
             <el-option label="请选择" value disabled></el-option>
             <el-option
@@ -19,7 +19,7 @@
           </el-select>
         </el-form-item>
 
-        <el-form-item label="二级分类">
+        <el-form-item label="二级分类" prop="second_cateid">
           <el-select v-model="form.second_cateid">
             <el-option label="请选择" value disabled></el-option>
             <el-option
@@ -31,7 +31,7 @@
           </el-select>
         </el-form-item>
 
-        <el-form-item label="商品名称">
+        <el-form-item label="商品名称" prop="goodsname">
           <el-input v-model="form.goodsname"></el-input>
         </el-form-item>
 
@@ -93,8 +93,8 @@
 
       <div slot="footer" class="dialog-footer">
         <el-button @click="cancel">取 消</el-button>
-        <el-button type="primary" @click="add" v-if="info.isAdd">添 加</el-button>
-        <el-button type="primary" @click="update" v-else>修 改</el-button>
+        <el-button type="primary" @click="add(form)" v-if="info.isAdd">添 加</el-button>
+        <el-button type="primary" @click="update(form)" v-else>修 改</el-button>
       </div>
     </el-dialog>
   </div>
@@ -107,7 +107,7 @@ import {
   reqGoodsAdd,
   reqGoodsDetail,
   reqGoodsUpdate,
-  reqCateList,
+  reqCateList
   // reqSpecsList 无须引入此接口发起请求，因为在specsList中自带下一级目录
 } from "../../../utils/request";
 import { successAlert, warningAlert } from "../../../utils/alert";
@@ -117,7 +117,7 @@ export default {
     return {
       imgUrl: "",
       secondCateList: [],
-      specsAttr:[],
+      specsAttr: [],
       form: {
         first_cateid: "",
         second_cateid: "",
@@ -131,6 +131,17 @@ export default {
         isnew: 1,
         ishot: 1,
         status: 1
+      },
+      rules: {
+        first_cateid: [
+          { required: true, message: "该选项不能为空", trigger: "change" }
+        ],
+        second_cateid: [
+          { required: true, message: "该选项不能为空", trigger: "change" }
+        ],
+        goodsname: [
+          { required: true, message: "该选项不能为空", trigger: "blur" }
+        ]
       }
     };
   },
@@ -167,37 +178,43 @@ export default {
         this.secondCateList = res.data.list;
       });
     },
-    changeSpecs(){
-      this.form.specsattr=[];
+    changeSpecs() {
+      this.form.specsattr = [];
       this.getSpecsAttr();
     },
-    getSpecsAttr(){
-      let obj=this.specsList.find(item=>item.id==this.form.specsid);
-      this.specsAttr=obj.attrs;
+    getSpecsAttr() {
+      let obj = this.specsList.find(item => item.id == this.form.specsid);
+      this.specsAttr = obj.attrs;
     },
     cancel() {
       this.info.isshow = false;
     },
 
-    add() {
-       /*
+    add(form) {
+      this.$refs.form.validate(valid => {
+        if (valid) {
+          /*
      let data=this.form;
      data.specsattr=JSON.stringify(this.form.specsattr)
      */
-      this.form.description=this.editor.txt.html();
-      let data={
-        ...this.form,
-        specsattr:JSON.stringify(this.form.specsattr)
-      }
-      reqGoodsAdd(data).then(res => {
-        if (res.data.code == 200) {
-          successAlert(res.data.msg);
-          this.empty();
-          this.info.isshow = false;
-          this.reqListAction();
-          this.reqTotalAction();
+          this.form.description = this.editor.txt.html();
+          let data = {
+            ...this.form,
+            specsattr: JSON.stringify(this.form.specsattr)
+          };
+          reqGoodsAdd(data).then(res => {
+            if (res.data.code == 200) {
+              successAlert(res.data.msg);
+              this.empty();
+              this.info.isshow = false;
+              this.reqListAction();
+              this.reqTotalAction();
+            } else {
+              warningAlert(res.data.msg);
+            }
+          });
         } else {
-          warningAlert(res.data.msg);
+          return false;
         }
       });
     },
@@ -232,30 +249,36 @@ export default {
       reqGoodsDetail(id).then(res => {
         if (res.data.code == 200) {
           this.form = res.data.list;
-          this.form.id=id;
+          this.form.id = id;
           this.getSecondCateList();
-          this.imgUrl=this.$imgHttp+this.form.img;
-          this.form.specsattr=JSON.parse(this.form.specsattr);
+          this.imgUrl = this.$imgHttp + this.form.img;
+          this.form.specsattr = JSON.parse(this.form.specsattr);
           this.getSpecsAttr();
         } else {
           warningAlert(res.data.msg);
         }
       });
     },
-    update() {
-      this.form.description=this.editor.txt.html();
-      let data={
-        ...this.form,
-        specsattr:JSON.stringify(this.form.specsattr)
-      }
-      reqGoodsUpdate(data).then(res => {
-        if (res.data.code == 200) {
-          successAlert(res.data.msg);
-          this.info.isshow = false;
-          this.empty();
-          this.reqListAction();
+    update(form) {
+      this.$refs.form.validate(valid => {
+        if (valid) {
+          this.form.description = this.editor.txt.html();
+          let data = {
+            ...this.form,
+            specsattr: JSON.stringify(this.form.specsattr)
+          };
+          reqGoodsUpdate(data).then(res => {
+            if (res.data.code == 200) {
+              successAlert(res.data.msg);
+              this.info.isshow = false;
+              this.empty();
+              this.reqListAction();
+            } else {
+              warningAlert(res.data.msg);
+            }
+          });
         } else {
-          warningAlert(res.data.msg);
+          return false;
         }
       });
     },

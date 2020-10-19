@@ -14,7 +14,7 @@
 
       <el-table-column label="图片">
         <template slot-scope="scope">
-          <img :src="$imgHttp+scope.row.img" v-if="scope.row.img!==''">
+          <img v-if="scope.row.img!=='null'" :src="$imgHttp+scope.row.img">
         </template>
       </el-table-column>
 

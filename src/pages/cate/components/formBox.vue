@@ -5,22 +5,22 @@
       :visible.sync="info.isshow"
       @closed="close"
     >
-      <el-form ref="form" :model="form" label-width="80px">
-        <el-form-item label="上级分类">
+      <el-form :rules="rules" ref="form" :model="form" label-width="80px">
+        <el-form-item label="上级分类" prop="pid">
           <el-select v-model="form.pid">
             <el-option label="顶级分类" :value="0"></el-option>
             <el-option v-for="item in list" :key="item.id" :label="item.catename" :value="item.id"></el-option>
           </el-select>
         </el-form-item>
 
-        <el-form-item label="分类名称">
+        <el-form-item label="分类名称" prop="catename">
           <el-input v-model="form.catename"></el-input>
         </el-form-item>
 
         <el-form-item label="图片" v-if="form.pid!=0">
           <!-- 1、原生写文件上传 -->
           <div class="up_img">
-            <img :src="imgUrl" alt v-if="imgUrl" />
+            <img :src="imgUrl" v-if="imgUrl" />
             <h3>+</h3>
             <input type="file" @change="getFile" v-if="info.isshow" />
           </div>
@@ -34,7 +34,7 @@
 
       <div slot="footer" class="dialog-footer">
         <el-button @click="cancel">取 消</el-button>
-        <el-button type="primary" @click="add" v-if="info.isAdd">添 加</el-button>
+        <el-button type="primary" @click="add(form)" v-if="info.isAdd">添 加</el-button>
         <el-button type="primary" @click="update" v-else>修 改</el-button>
       </div>
     </el-dialog>
@@ -59,6 +59,12 @@ export default {
         catename: "",
         img: null,
         status: 1
+      },
+      rules: {
+        pid: [{ required: true, message: "该选项不能为空", trigger: "change" }],
+        catename: [
+          { required: true, message: "该选项不能为空", trigger: "blur" }
+        ]
       }
     };
   },
@@ -75,15 +81,21 @@ export default {
     cancel() {
       this.info.isshow = false;
     },
-    add() {
-      reqCateAdd(this.form).then(res => {
-        if (res.data.code == 200) {
-          successAlert(res.data.msg);
-          this.empty();
-          this.info.isshow = false;
-          this.reqListAction();
+    add(form) {
+      this.$refs.form.validate(valid => {
+        if (valid) {
+          reqCateAdd(this.form).then(res => {
+            if (res.data.code == 200) {
+              successAlert(res.data.msg);
+              this.empty();
+              this.info.isshow = false;
+              this.reqListAction();
+            } else {
+              warningAlert(res.data.msg);
+            }
+          });
         } else {
-          warningAlert(res.data.msg);
+          return false;
         }
       });
     },
@@ -97,7 +109,7 @@ export default {
       this.form = {
         pid: 0,
         catename: "",
-         img: null,
+        img: null,
         status: 1
       };
     },
@@ -105,32 +117,37 @@ export default {
       reqCateDetail(id).then(res => {
         if (res.data.code == 200) {
           console.log(res);
-          
+
           this.form = res.data.list;
           this.form.id = id;
-          this.imgUrl=this.$imgHttp+this.form.img;
+          this.imgUrl = this.$imgHttp + this.form.img;
         } else {
           warningAlert(res.data.msg);
         }
       });
     },
     update() {
-      reqCateUpdate(this.form).then(res => {
-        if (res.data.code == 200) {
-          successAlert(res.data.msg);
-          this.info.isshow = false;
-          this.empty();
-          this.reqListAction();
+      this.$refs.form.validate(valid => {
+        if (valid) {
+          reqCateUpdate(this.form).then(res => {
+            if (res.data.code == 200) {
+              successAlert(res.data.msg);
+              this.info.isshow = false;
+              this.empty();
+              this.reqListAction();
+            } else {
+              warningAlert(res.data.msg);
+            }
+          });
         } else {
-          warningAlert(res.data.msg);
+          return false;
         }
       });
     },
     getFile(e) {
       // console.log(e);
       let file = e.target.files[0];
-      console.log(1,file);
-      
+      console.log(1, file);
 
       // 判断图片的大小是否大于2M，size的单位是B
       if (file.size > 2 * 1024 * 1024) {

@@ -8,8 +8,8 @@
       row-key="id"
       :tree-props="{children:'children'}"
     >
-      <el-table-column prop="id" label="菜单编号" sortable width="180"></el-table-column>
-      <el-table-column prop="title" label="菜单名称" sortable width="180"></el-table-column>
+      <el-table-column prop="id" label="菜单编号" sortable></el-table-column>
+      <el-table-column prop="title" label="菜单名称" sortable></el-table-column>
       <el-table-column label="菜单图标">
         <template slot-scope="scope">
           <i :class="scope.row.icon"></i>
@@ -22,7 +22,7 @@
           <el-button v-else type="info">禁用</el-button>
         </template>
       </el-table-column>
-      <el-table-column prop="status" label="操作">
+      <el-table-column prop="status" label="操作" width="180">
         <template slot-scope="scope">
           <el-button type="primary" @click="edit(scope.row.id)">编辑</el-button>
           <el-button type="danger" @click="del(scope.row.id)">删除</el-button>

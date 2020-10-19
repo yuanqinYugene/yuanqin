@@ -1,8 +1,8 @@
 <template>
   <div>
     <el-dialog :title="info.isAdd ? '添加角色' : '编辑角色'" :visible.sync="info.isshow" @closed="close">
-      <el-form ref="form" :model="form" label-width="80px">
-        <el-form-item label="角色名称">
+      <el-form :rules="rules" ref="form" :model="form" label-width="80px">
+        <el-form-item label="角色名称" prop="rolename">
           <el-input v-model="form.rolename"></el-input>
         </el-form-item>
 
@@ -23,7 +23,7 @@
 
       <div slot="footer" class="dialog-footer">
         <el-button @click="cancel">取 消</el-button>
-        <el-button type="primary" @click="add" v-if="info.isAdd">添 加</el-button>
+        <el-button type="primary" @click="add(form)" v-if="info.isAdd">添 加</el-button>
         <el-button type="primary" @click="update" v-else>修 改</el-button>
       </div>
     </el-dialog>
@@ -32,7 +32,11 @@
 
 <script>
 import { mapGetters, mapActions } from "vuex";
-import {  reqRoleAdd,  reqRoleDetail,  reqRoleUpdate} from "../../../utils/request";
+import {
+  reqRoleAdd,
+  reqRoleDetail,
+  reqRoleUpdate
+} from "../../../utils/request";
 import { successAlert, warningAlert } from "../../../utils/alert";
 export default {
   props: ["info"],
@@ -42,6 +46,11 @@ export default {
         rolename: "",
         menus: "[]",
         status: 1
+      },
+      rules: {
+        rolename: [
+          { required: true, message: "该选项不能为空", trigger: "blur" }
+        ]
       }
     };
   },
@@ -67,17 +76,23 @@ export default {
     cancel() {
       this.info.isshow = false;
     },
-    add() {
-      // menus需要提交给后台的，但是后台要求是字符串数组的格式，所以从树形控件中获取到选中的内容后再JSON.stringify转化一下
-      this.form.menus = JSON.stringify(this.$refs.tree.getCheckedKeys());
-      reqRoleAdd(this.form).then(res => {
-        if (res.data.code == 200) {
-          successAlert(res.data.msg);
-          this.empty();
-          this.info.isshow = false;
-          this.reqListAction();
+    add(form) {
+      this.$refs.form.validate(valid => {
+        if (valid) {
+          // menus需要提交给后台的，但是后台要求是字符串数组的格式，所以从树形控件中获取到选中的内容后再JSON.stringify转化一下
+          this.form.menus = JSON.stringify(this.$refs.tree.getCheckedKeys());
+          reqRoleAdd(this.form).then(res => {
+            if (res.data.code == 200) {
+              successAlert(res.data.msg);
+              this.empty();
+              this.info.isshow = false;
+              this.reqListAction();
+            } else {
+              warningAlert(res.data.msg);
+            }
+          });
         } else {
-          warningAlert(res.data.msg);
+          return false;
         }
       });
     },
@@ -108,15 +123,21 @@ export default {
       });
     },
     update() {
-      this.form.menus=JSON.stringify(this.$refs.tree.getCheckedKeys())
-      reqRoleUpdate(this.form).then(res => {
-        if (res.data.code == 200) {
-          successAlert(res.data.msg);
-          this.info.isshow = false;
-          this.empty();
-          this.reqListAction();
+      this.$refs.form.validate(valid => {
+        if (valid) {
+          this.form.menus = JSON.stringify(this.$refs.tree.getCheckedKeys());
+          reqRoleUpdate(this.form).then(res => {
+            if (res.data.code == 200) {
+              successAlert(res.data.msg);
+              this.info.isshow = false;
+              this.empty();
+              this.reqListAction();
+            } else {
+              warningAlert(res.data.msg);
+            }
+          });
         } else {
-          warningAlert(res.data.msg);
+          return false;
         }
       });
     }

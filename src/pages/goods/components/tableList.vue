@@ -8,9 +8,9 @@
       row-key="id"
       :tree-props="{children:'children'}"
     >
-      <el-table-column prop="id" label="商品编号" sortable width="180"></el-table-column>
+      <el-table-column prop="id" label="商品编号" sortable></el-table-column>
 
-      <el-table-column prop="goodsname" label="商品名称" sortable width="180"></el-table-column>
+      <el-table-column prop="goodsname" label="商品名称" sortable></el-table-column>
 
       <el-table-column label="商品价格">
         <template slot-scope="scope">
@@ -51,7 +51,7 @@
         </template>
       </el-table-column>
 
-      <el-table-column label="操作">
+      <el-table-column label="操作" width="180">
         <template slot-scope="scope">
           <el-button type="primary" @click="edit(scope.row.id)">编辑</el-button>
           <del-btn @del="del(scope.row.id)"></del-btn> 
